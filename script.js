@@ -17,7 +17,7 @@ let currentStep = 0;
 
 /** 사용자가 고른 과정: "1" 또는 "2" 또는 아직 없으면 null */
 let selectedCourse = null;
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzRIUBGvoD6AT7aW9difMKvRbhhubuN30QoXa2fkG1xBtzpLrRF7qJWNkPmam7fot0BuA/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzw5RRYWcZ96vxB_khRumNJRn5-AA1dHxfG8iz9pW4jKnFudIFfcyA0J1r4gxSc-bb_ag/exec";
 /** 9개 차수의 표시 이름 (나중에 날짜로 바꾸고 싶으면 이 배열만 수정하면 됩니다) */
 /** 업무효율화 과정 차수 (9개) */
 const SLOT_LABELS_1 = [
