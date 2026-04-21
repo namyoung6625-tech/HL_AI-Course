@@ -194,17 +194,18 @@ function handleNext(context) {
     goToStep(2);
     return;
   }
+
   if (context === "course") {
     if (!validateCourse()) return;
-    initSlotSelects();   // ← 이거 추가
+    initSlotSelects();
     prepareSurveyUI();
     goToStep(3);
     return;
   }
+
   if (context === "survey") {
     const count = countSurveyChecked();
 
-    // 업무효율화 과정: 5개 중 3개 이상 선택해야 통과
     if (selectedCourse === "1") {
       if (count < 3) {
         openHardModal("3개 이상 해당할 경우 본 과정 신청이 가능합니다.");
@@ -212,7 +213,6 @@ function handleNext(context) {
       }
     }
 
-    // 업무자동화 과정: 5개 모두 선택 + 아래 주관식 3개 모두 필수
     if (selectedCourse === "2") {
       if (count < 5) {
         openHardModal("모든 항목을 충족하며 자동화 주제를 제출해야 본 과정 신청이 가능합니다.");
@@ -225,9 +225,10 @@ function handleNext(context) {
     syncSlotSelectOptions();
     return;
   }
+
   if (context === "slots") {
     if (!validateSlots()) return;
-  
+
     submitToGoogleSheet()
       .then(() => {
         renderSummary();
@@ -235,12 +236,23 @@ function handleNext(context) {
       })
       .catch((error) => {
         console.error(error);
-        showInfoModal("이미 신청이 완료된 이메일입니다. 중복 신청은 불가합니다.");
+
+        if (error.code === "DUPLICATE_EMAIL") {
+          const incoming = error.debug?.incomingEmail || "-";
+          const row = error.debug?.matchedRow || "-";
+          const matched = error.debug?.matchedValue || "-";
+
+          showInfoModal(
+            `중복 이메일로 판정되었습니다.\n\n입력 이메일: ${incoming}\n시트 행: ${row}\n시트 값: ${matched}`
+          );
+        } else {
+          showInfoModal("신청 저장 중 오류가 발생했습니다. 다시 시도해 주세요.");
+        }
       });
-  
+
     return;
   }
-  // 안전망: 정의되지 않은 경우
+
   goToStep(currentStep + 1);
 }
 
@@ -679,9 +691,12 @@ async function submitToGoogleSheet() {
     body: JSON.stringify(payload)
   });
 
-  const result = await response.json();
+const result = await response.json();
 
-  if (!result.ok) {
-    throw new Error(result.error || "시트 저장에 실패했습니다.");
-  }
+if (!result.ok) {
+  const error = new Error(result.error || "시트 저장에 실패했습니다.");
+  error.code = result.code || "";
+  error.debug = result.debug || null;
+  throw error;
+}
 }
